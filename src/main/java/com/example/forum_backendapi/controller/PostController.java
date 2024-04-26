@@ -6,9 +6,13 @@ import com.example.forum_backendapi.entity.User;
 import com.example.forum_backendapi.repository.PostRepository;
 import com.example.forum_backendapi.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +30,16 @@ public class PostController {
     private UserRepository userRepository;
 
     @GetMapping
-    public List<Post> getAllPosts() {
-        return postRepository.findAll();
+    public ResponseEntity<List<Post>> getAllPosts(@RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> postsPage = postRepository.findAll(pageable);
+
+        if (postsPage.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(postsPage.getContent());
+        }
     }
 
     @GetMapping("/{id}")
